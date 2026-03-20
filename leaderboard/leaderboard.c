@@ -23,40 +23,59 @@ Node* createNode(Player player) {
     return newNode;
 }
 
-// Function to insert a player into the leaderboard in sorted order (descending by score)
+// Function to swap data of two nodes
+void swapData(Node* a, Node* b) {
+    Player temp = a->data;
+    a->data = b->data;
+    b->data = temp;
+}
+
+// Function to perform Bubble Sort on the Circular Linked List
+void bubbleSortLeaderboard(Node* head) {
+    if (head == NULL || head->next == head) {
+        return;
+    }
+
+    int swapped;
+    Node* current;
+    Node* last_ptr = NULL;
+
+    do {
+        swapped = 0;
+        current = head;
+
+        while (current->next != head && current->next != last_ptr) {
+            // Sort in descending order
+            if (current->data.score < current->next->data.score) { 
+                swapData(current, current->next);
+                swapped = 1;
+            }
+            current = current->next;
+        }
+        last_ptr = current;
+    } while (swapped);
+}
+
+// Function to insert a player into the leaderboard
 void insertPlayer(Node** head_ref, Player new_player) {
     Node* new_node = createNode(new_player);
 
     // Case 1: Empty List
     if (*head_ref == NULL) {
         *head_ref = new_node;
-        return;
-    }
-
-    Node* current = *head_ref;
-
-    // Case 2: New node has a higher score than the head node
-    // It should become the new head, and the last node's next must point to it
-    if (new_player.score > current->data.score) {
+    } else {
+        Node* current = *head_ref;
         // Find the last node
         while (current->next != *head_ref) {
             current = current->next;
         }
-        // Insert new node before the current head
+        // Insert at the end
         current->next = new_node;
         new_node->next = *head_ref;
-        *head_ref = new_node; // Update head
-        return;
     }
 
-    // Case 3: Insert somewhere in the middle or at the end
-    while (current->next != *head_ref && current->next->data.score >= new_player.score) {
-        current = current->next;
-    }
-    
-    // Insert after current
-    new_node->next = current->next;
-    current->next = new_node;
+    // Sort the updated leaderboard using Bubble Sort
+    bubbleSortLeaderboard(*head_ref);
 }
 
 // Function to display the leaderboard
