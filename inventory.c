@@ -18,17 +18,38 @@ struct Node_inventory {
     struct Node_inventory *prev;
 };
 
+void initialize_inventory(struct player_inventory *list);
+void traverse_inventory(struct player_inventory *list);
+bool is_empty(struct player_inventory* list);
+void add_player(struct player_inventory* list, const char *name, int rating, const char *type, int price);
+void search_inventory(struct player_inventory* list, const char *name, int rating);
+void sell_player(struct player_inventory* list, const char *name, int rating);
+
 void initialize_inventory(struct player_inventory *list){
     list -> head = NULL;
     list -> tail = NULL;
 }
 
-struct Node_inventory* create_node(char name[25], int rating, char type[5], int price){
-    struct Node_inventory *newNode;
-    newNode = (struct Node_inventory*)malloc(sizeof(struct Node_inventory));
-    strcpy(newNode -> player_name, name);
+static struct Node_inventory* create_node(const char *name, int rating, const char *type, int price){
+    struct Node_inventory *newNode = (struct Node_inventory*)malloc(sizeof(struct Node_inventory));
+    if (newNode == NULL) {
+        return NULL;
+    }
+
+    if (name == NULL) {
+        newNode->player_name[0] = '\0';
+    }
+    else {
+        snprintf(newNode->player_name, sizeof(newNode->player_name), "%s", name);
+    }
+
     newNode -> player_rating = rating;
-    strcpy(newNode -> player_type, type);
+    if (type == NULL) {
+        newNode->player_type[0] = '\0';
+    }
+    else {
+        snprintf(newNode->player_type, sizeof(newNode->player_type), "%s", type);
+    }
     newNode -> player_price = price;
     newNode -> next = NULL;
     newNode -> prev = NULL;
@@ -39,25 +60,25 @@ void traverse_inventory(struct player_inventory *list){
     struct Node_inventory *temp = list->head;
     printf("    Player Name   | Rating |  Type  |   Price   \n");
     printf("-----------------------------------------------\n");
-    int i = 1;
-    
+
     while (temp != NULL){
         printf(" %16s | %5d  |%5s   | %8d \n",temp->player_name, temp->player_rating, temp->player_type, temp->player_price);
         temp = temp -> next;
-        i++;
     }
     printf("-----------------------------------------------\n");
 }
 
 bool is_empty(struct player_inventory* list){
-    if (list->head == NULL)
-        return true;
-    else
-        return false;
+    return list->head == NULL;
 }
 
-void add_player(struct player_inventory* list, char name[25], int rating, char type[5], int price){//insert_back
+void add_player(struct player_inventory* list, const char *name, int rating, const char *type, int price){//insert_back
     struct Node_inventory* newNode = create_node(name, rating, type, price);
+    if (newNode == NULL) {
+        fprintf(stderr, "Failed to allocate memory for player.\n");
+        return;
+    }
+
     if (is_empty(list)) {
         list->head = newNode;
         list->tail = newNode;
@@ -81,14 +102,14 @@ void add_player(struct player_inventory* list, char name[25], int rating, char t
 //    }
 //}
 
-void search_inventory(struct player_inventory* list, char name[25], int rating){
+void search_inventory(struct player_inventory* list, const char *name, int rating){
     if (is_empty(list)) {
         printf("List is Empty!!!\n");
     }
     else{
         struct Node_inventory* temp = list -> head;
         while (temp != NULL) {
-            if (temp -> player_name == name && temp -> player_rating == rating) {
+            if (strcmp(temp->player_name, name) == 0 && temp->player_rating == rating) {
                 printf("\nPlayer Found...\n");
                 printf("____________________________\n");
                 printf("|                          |\n");
@@ -100,29 +121,35 @@ void search_inventory(struct player_inventory* list, char name[25], int rating){
     }
 }
 
-void sell_player (struct player_inventory* list, char name[25], int rating){ //delete_mid
+void sell_player(struct player_inventory* list, const char *name, int rating){ //delete_mid
     if (is_empty(list)){
         printf("Inventory is Empty\n");
     }
     else {
-        int i = 1;
         struct Node_inventory* temp = list -> head;
-        while (temp -> player_name == name && temp -> player_rating == rating) {
+
+        while (temp != NULL && (strcmp(temp->player_name, name) != 0 || temp->player_rating != rating)) {
             temp = temp -> next;
-            i++;
         }
+
         if (temp == NULL){
             printf("No Player with the code : %s in the inventory\n", name);
         }
-        else if (temp == list -> tail) {
-            struct Node_inventory* temp = list -> tail;
-            list -> tail = list -> tail -> prev;
-            list -> tail -> next = NULL;
-            free(temp);
-        }
         else{
-            temp -> next -> prev = temp -> prev;
-            temp -> prev -> next = temp -> next;
+            if (temp->prev != NULL) {
+                temp->prev->next = temp->next;
+            }
+            else {
+                list->head = temp->next;
+            }
+
+            if (temp->next != NULL) {
+                temp->next->prev = temp->prev;
+            }
+            else {
+                list->tail = temp->prev;
+            }
+
             free(temp);
         }
     }
