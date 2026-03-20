@@ -151,14 +151,5 @@ void delete_account(struct user_registry* list, int id){ //delete_mid
 }
 
 int main(void) {
-    struct user_registry users;
-    initialize_list(&users);
-    add_user(&users, "senuka");
-    add_user(&users, "deneth");
-    add_user(&users, "nimsara");
-    searchUser(&users, 2);
-    
-    traverse_users(&users);
-
     return 0;
 }
