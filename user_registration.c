@@ -17,16 +17,25 @@ struct userNode {
     struct userNode *prev;
 };
 
-void initialize_list (struct user_registry *list){
+void delete_account(struct user_registry* list, int id);
+
+static void initialize_list(struct user_registry *list){
     list -> head = NULL;
     list -> tail = NULL;
 }
 
-struct userNode* create_node(char name[25], int id){
-    struct userNode *newNode;
-    newNode = (struct userNode*)malloc(sizeof(struct userNode));
-    
-    strcpy(newNode -> user_name, name);
+static struct userNode* create_node(const char *name, int id){
+    struct userNode *newNode = (struct userNode*)malloc(sizeof(struct userNode));
+    if (newNode == NULL) {
+        return NULL;
+    }
+
+    if (name == NULL) {
+        newNode->user_name[0] = '\0';
+    }
+    else {
+        snprintf(newNode->user_name, sizeof(newNode->user_name), "%s", name);
+    }
     newNode -> user_id = id;
     newNode -> rank = 'E';
     newNode -> score = 0;
@@ -35,38 +44,38 @@ struct userNode* create_node(char name[25], int id){
     return newNode;
 }
 
-void traverse_users(struct user_registry *list){
+static void traverse_users(struct user_registry *list){
     struct userNode *temp = list->head;
     printf("  User Name |  Rank |   Score \n");
     printf("-------------------------------------\n");
-    int i = 1;
-    
+
     while (temp != NULL){
         printf(" %10s | %5c | %5d \n",temp->user_name, temp->rank, temp->score);
         temp = temp -> next;
-        i++;
     }
     printf("-------------------------------------\n");
 }
 
-bool is_empty(struct user_registry* list){
-    if (list->head == NULL)
-        return true;
-    else
-        return false;
+static bool is_empty(struct user_registry* list){
+    return list->head == NULL;
 }
 
-int new_ID_provider(struct user_registry* list) {
+static int new_ID_provider(struct user_registry* list) {
     if (is_empty(list)) {
         return 1;
     }
-    return list -> tail -> user_id+1;
+    return list -> tail -> user_id + 1;
 }
 
 
-void add_user(struct user_registry* list, char name[25]){//insert_back
+static void add_user(struct user_registry* list, const char *name){//insert_back
     int id = new_ID_provider(list);
     struct userNode* newNode = create_node(name, id);
+    if (newNode == NULL) {
+        fprintf(stderr, "Failed to allocate memory for new user.\n");
+        return;
+    }
+
     if (is_empty(list)) {
         list->head = newNode;
         list->tail = newNode;
@@ -90,7 +99,7 @@ void add_user(struct user_registry* list, char name[25]){//insert_back
 //    }
 //}
 
-void searchUser(struct user_registry* list, int id){
+static void searchUser(struct user_registry* list, int id){
     if (is_empty(list)) {
         printf("List is Empty!!!\n");
     }
@@ -101,7 +110,7 @@ void searchUser(struct user_registry* list, int id){
                 printf("\nUser Found...\n");
                 printf("_____________________________\n");
                 printf("|        |       |          |\n");
-                printf("| %6s | %5d | %8d |\n",temp->user_name, temp->rank, temp->score);
+                printf("| %6s | %5c | %8d |\n",temp->user_name, temp->rank, temp->score);
                 printf("|________|_______|__________|\n\n\n");
             }
             temp = temp -> next;
@@ -109,13 +118,9 @@ void searchUser(struct user_registry* list, int id){
     }
 }
 
-void delete_account (struct user_registry* list, int id){ //delete_mid
+void delete_account(struct user_registry* list, int id){ //delete_mid
     if (is_empty(list)){
-        printf("User does not exists.\n");
-    }
-    else if (list->head == list->tail){
-        list -> head = NULL;
-        list -> tail = NULL;
+        printf("User does not exist.\n");
     }
     else {
         struct userNode* temp = list -> head;
@@ -125,15 +130,21 @@ void delete_account (struct user_registry* list, int id){ //delete_mid
         if (temp == NULL){
             printf("No user with the id : %d in the user space.\n", id);
         }
-        else if (temp == list -> tail) {
-            struct userNode* temp = list -> tail;
-            list -> tail = list -> tail -> prev;
-            list -> tail -> next = NULL;
-            free(temp);
-        }
-        else{
-            temp -> next -> prev = temp -> prev;
-            temp -> prev -> next = temp -> next;
+        else {
+            if (temp->prev != NULL) {
+                temp->prev->next = temp->next;
+            }
+            else {
+                list->head = temp->next;
+            }
+
+            if (temp->next != NULL) {
+                temp->next->prev = temp->prev;
+            }
+            else {
+                list->tail = temp->prev;
+            }
+
             free(temp);
         }
     }
