@@ -273,5 +273,8 @@ int main() {
     printf("\nUser2 trying to buy Pedri...\n");
     buy_card(&user2, &marketplace, 103);
 
+    printf("\nPress Enter to exit...");
+    getchar();
+
     return 0;
 }
