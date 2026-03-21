@@ -22,5 +22,7 @@ void initialize_squad(Squad *s);
 void display_squad(Squad *s);
 // Pass inventory to search from it
 void add_player_to_squad(Squad *s, struct player_inventory *inv, const char *name);
+// Automatically select best players for a standard 3-4-3-1 formation
+void auto_select_squad(Squad *s, struct player_inventory *inv);
 
 #endif // SQUAD_H
