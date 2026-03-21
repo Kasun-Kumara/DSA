@@ -3,27 +3,9 @@
 #include <string.h>
 #include <stdbool.h>
 
-struct player_inventory {
-    struct Node_inventory *head;
-    struct Node_inventory *tail;
-};
+#include "inventory.h"
 
-struct Node_inventory {
-    
-    char player_name[25];
-    int player_rating;
-    char player_type[5];
-    int player_price;
-    struct Node_inventory *next;
-    struct Node_inventory *prev;
-};
-
-void initialize_inventory(struct player_inventory *list);
-void traverse_inventory(struct player_inventory *list);
-bool is_empty(struct player_inventory* list);
-void add_player(struct player_inventory* list, const char *name, int rating, const char *type, int price);
-void search_inventory(struct player_inventory* list, const char *name, int rating);
-void sell_player(struct player_inventory* list, const char *name, int rating);
+// Struct definitions moved to inventory.h
 
 void initialize_inventory(struct player_inventory *list){
     list -> head = NULL;
@@ -42,6 +24,7 @@ static struct Node_inventory* create_node(const char *name, int rating, const ch
     else {
         snprintf(newNode->player_name, sizeof(newNode->player_name), "%s", name);
     }
+
 
     newNode -> player_rating = rating;
     if (type == NULL) {
@@ -155,7 +138,20 @@ void sell_player(struct player_inventory* list, const char *name, int rating){ /
     }
 }
 
+struct Node_inventory* find_player_by_name(struct player_inventory* list, const char *name) {
+    if (is_empty(list)) return NULL;
+    struct Node_inventory* temp = list->head;
+    while (temp != NULL) {
+        if (strcmp(temp->player_name, name) == 0) {
+            return temp;
+        }
+        temp = temp->next;
+    }
+    return NULL;
+}
+
 int main(void) {
+
 
     return 0;
 }
