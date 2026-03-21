@@ -256,3 +256,30 @@ void auto_select_squad(Squad *s, struct player_inventory *inv) {
     printf("Squad selection complete. Total players: %d/11\n", s->count);
 }
 
+void display_squad_detailed(Squad *s) {
+    if (s->count == 0) {
+        printf("Squad is empty.\n");
+        return;
+    }
+    printf("\n--- Detailed Squad View (%d/%d) ---\n", s->count, SQUAD_SIZE);
+    printf(" %-20s | %-15s \n", "Player Name", "Position");
+    printf("---------------------------------------\n");
+    
+    for (int i = 0; i < s->count; i++) {
+        const char *position = "Unknown";
+        if (strings_equal_ignore_case(s->players[i].type, "FWD")) {
+            position = "Forward";
+        } else if (strings_equal_ignore_case(s->players[i].type, "DEF")) {
+            position = "Defender";
+        } else if (strings_equal_ignore_case(s->players[i].type, "MID")) {
+            position = "Midfielder";
+        } else if (strings_equal_ignore_case(s->players[i].type, "GK")) {
+            position = "Goalkeeper";
+        }
+        
+         printf(" %-20s | %-15s \n", s->players[i].name, position);
+    }
+    printf("---------------------------------------\n");
+}
+
+
